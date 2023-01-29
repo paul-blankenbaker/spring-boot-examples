@@ -4,8 +4,8 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,10 +28,7 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @Configuration
 @ConditionalOnExpression("'${springdoc.swagger-ui.enabled:false}'.equals('true')")
-public class SwaggerConfig implements CommandLineRunner {
-
-    @Value("http://${management.server.address:localhost}:${management.server.port:8080}${management.endpoints.web.base-path:/actuator}/")
-    private String actuatorUrl;
+public class SwaggerConfig {
 
     /**
      * Example of customizing the meta-data used in the Swagger OpenAPI output.
@@ -59,16 +56,14 @@ public class SwaggerConfig implements CommandLineRunner {
     }
 
     /**
-     * Example of doing something once the Spring Boot application is ready to rock and roll.
+     * Get grouping list for OpenAPI.
      *
-     * <p>In this example implementation, we will just log a message to the console showing the user the curl
-     * command to run to hit our test end point.</p>
-     *
-     * @param args - ignored.
+     * @param apiUrl Root URL that all of your APIs fall under (like: "/logging-example/api/v1").
+     * @return Object OpenApi can use go nicely group your end points for things like swagger-ui.
      */
-    @Override
-    public void run(String... args) {
-        log.info("For swagger-ui,  try: curl " + actuatorUrl + "swagger-ui");
-        log.info("For openapi JSON try: curl " + actuatorUrl + "openapi/springdocDefault | jq");
+    @Bean
+    public GroupedOpenApi exampleLoggingOpenApi(@Value("${api.url}") String apiUrl) {
+        String[] paths = { apiUrl + "/**" };
+        return GroupedOpenApi.builder().group("logging-example").pathsToMatch(paths).build();
     }
 }

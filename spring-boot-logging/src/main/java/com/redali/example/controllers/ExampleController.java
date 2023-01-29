@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j // From lombok - provides logger "log" in class (several logging options available
 @RestController // Let Spring Boot know that this class provides REST handlers
-@RequestMapping("/log/") // Root path of REST handlers provided by this class
+@RequestMapping("${api.url}/log/") // Root path of REST handlers provided by this class
 // This is optional, it allows the swagger-ui (or any ui) to actually make use of the API from a different localhost port.
 @CrossOrigin(origins = "http://localhost:${management.server.port:8080}")
 @Tag(name = "Logging Test", description = """
@@ -50,10 +50,10 @@ public class ExampleController implements CommandLineRunner {
     // private static Logger log = LoggerFactory.getLogger(LoggingExampleController.class)
 
     // This is just for the initial startup log message (see run() method below)
-    @Value("http://${server.address:localhost}:${server.port:8080}/")
+    @Value("http://${server.address:localhost}:${server.port:8080}${api.url}/")
     private String baseUrl;
 
-    @Value("http://${management.server.address:localhost}:${management.server.port:8080}${management.endpoints.web.base-path:/actuator}")
+    @Value("http://${management.server.address:localhost}:${management.server.port:8080}${management.endpoints.web.base-path:/actuator}/")
     private String managementUrl;
 
     /**
@@ -112,5 +112,7 @@ public class ExampleController implements CommandLineRunner {
     @Override
     public void run(String... args) {
         log.info("For testing info, try: curl " + baseUrl + "log/test");
+        log.info("For swagger-ui,  try: curl " + managementUrl + "swagger-ui");
+        log.info("For openapi JSON try: curl " + managementUrl + "openapi/springdocDefault | jq");
     }
 }
