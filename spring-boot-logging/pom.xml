@@ -15,6 +15,8 @@
     <description>Spring Boot 3 example of dynamically adjusting log levels at run time</description>
     <properties>
         <java.version>17</java.version>
+        <!-- To enable building of docker container images via: mvn spring-boot:build-image -->
+        <repackage.classifier/>
         <!-- Use properties to facilitate filtering substitution in application.properties file -->
         <license.name>Apache-2.0</license.name>
         <license.url>https://www.apache.org/licenses/LICENSE-2.0.txt</license.url>
