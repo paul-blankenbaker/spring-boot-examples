@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.1</version>
+        <version>3.0.2</version>
         <relativePath/>
     </parent>
     <groupId>com.redali</groupId>
@@ -18,9 +18,12 @@
         <!-- To enable building of docker container images via: mvn spring-boot:build-image -->
         <repackage.classifier/>
         <!-- Use properties to facilitate filtering substitution in application.properties file -->
+        <author.name>Paul Blankenbaker</author.name>
         <license.name>Apache-2.0</license.name>
         <license.url>https://www.apache.org/licenses/LICENSE-2.0.txt</license.url>
+        <copyright.year>2023</copyright.year>
     </properties>
+    <contributors><contributor><name>${author.name}</name></contributor></contributors>
     <licenses>
         <license>
             <name>${license.name}</name>
@@ -75,6 +78,15 @@
                 <includes>
                     <include>application.properties</include>
                     <include>banner.txt</include>
+                </includes>
+            </resource>
+            <resource>
+                <!-- This allows us to substitute maven properties into our application.properties file -->
+                <filtering>true</filtering>
+                <directory>src/scripts</directory>
+                <targetPath>..</targetPath>
+                <includes>
+                    <include>*.sh</include>
                 </includes>
             </resource>
         </resources>

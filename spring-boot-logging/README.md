@@ -9,6 +9,40 @@ reference for the following:
 * Ability to adjust log levels on the fly via /actuator/loggers endpoints
 * How to trap and verify log messages in unit tests
 
+In addition, a helper script [spring-boot-log-level.sh](src/scripts/spring-boot-log-level.sh)
+has been provided that can be used to get and set the log levels (it was a
+pain for me to remember the curl commands). After building, you should be able
+to copy the script to /usr/local/bin (or somewhere in your PATH) on a Linux
+system and use it via:
+
+```shell
+spring-boot-log-level.sh --get --port ${PORT} -c com.redali.example.controllers.ExampleController 
+```
+
+The script is capable of setting up kubectl port forwarding if your service is
+running inside of Kubernetes and can be used like:
+
+```shell
+spring-boot-log-level.sh --namespace examples --deployment spring-boot-logging-example --port 8888 --get -c com.redali.example
+```
+
+And you can then create aliases or other short scripts to leverage it. For
+example:
+
+```shell
+alias examples-log-level='spring-boot-log-level.sh --namespace examples --port ${PORT} --deployment'
+```
+
+Which could then be used to manage any service running in the examples namespace
+that uses port ${PORT} for actuator access with commands like:
+
+```shell
+examples-log-level spring-boot-logging-example --set -c com.redali.example.controllers.ExampleController -l debug
+examples-log-level spring-boot-logging-example --get -c com.redali.example.controllers.ExampleController
+```
+
+Well, maybe that isn't all that much easier.
+
 # Bonus
 
 As a side bonus (and in order to actually perform some testing):
@@ -24,9 +58,9 @@ pain to track down.
 
 To use as a starting point:
 
-* Delete or refactor [SwaggerConfig.java](src/main/java/com/redali/example/SwaggerConfig.java))
-* Delete or refactor [ExampleController.java](src/main/java/com/redali/example/controllers/ExampleController.java))
-and [ExampleTests.java](src/test/java/com/redali/example/ExampleTests.java)).
+* Delete or refactor [SwaggerConfig.java](src/main/java/com/redali/example/SwaggerConfig.java)
+* Delete or refactor [ExampleController.java](src/main/java/com/redali/example/controllers/ExampleController.java)
+and [ExampleTests.java](src/test/java/com/redali/example/ExampleTests.java).
 * Make sure application still builds (mvn install).
 * Make sure application still runs (java -jar target/*.jar)
 * Make sure you can still access the actuator endpoints (curl http://localhost:8888/actuator/loggers).
@@ -148,8 +182,9 @@ import it into microk8s via:
 docker image save spring-boot-logging-example:0.0.1-SNAPSHOT | microk8s ctr image import -
 ```
 
-You can then generate a template deployment and service yaml file for kubernetes using
-the following commands (skip the namespace if you already have an "examples" namespace):
+You can then generate a template deployment and service yaml file for kubernetes
+using the following commands (skip the namespace if you already have an
+"examples" namespace):
 
 ```shell
 kubectl create namespace examples -o=yaml --dry-run=client >| target/k8s.yaml
