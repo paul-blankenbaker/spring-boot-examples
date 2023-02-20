@@ -23,22 +23,22 @@ The script is capable of setting up kubectl port forwarding if your service is
 running inside of Kubernetes and can be used like:
 
 ```shell
-spring-boot-log-level.sh --namespace examples --deployment spring-boot-logging-example --port 8888 --get -c com.redali.example
+spring-boot-log-level.sh --namespace demo --deployment spring-boot-logging-example --port 8888 --get -c com.redali.example
 ```
 
 And you can then create aliases or other short scripts to leverage it. For
 example:
 
 ```shell
-alias examples-log-level='spring-boot-log-level.sh --namespace examples --port ${PORT} --deployment'
+alias demo-log-level='spring-boot-log-level.sh --namespace demo --port ${PORT} --deployment'
 ```
 
-Which could then be used to manage any service running in the examples namespace
+Which could then be used to manage any service running in the demo namespace
 that uses port ${PORT} for actuator access with commands like:
 
 ```shell
-examples-log-level spring-boot-logging-example --set -c com.redali.example.controllers.ExampleController -l debug
-examples-log-level spring-boot-logging-example --get -c com.redali.example.controllers.ExampleController
+demo-log-level spring-boot-logging-example --set -c com.redali.example.controllers.ExampleController -l debug
+demo-log-level spring-boot-logging-example --get -c com.redali.example.controllers.ExampleController
 ```
 
 Well, maybe that isn't all that much easier.
@@ -97,7 +97,8 @@ It will echo back some example curl commands for showing and tweaking the
 logging levels.
 
 You should be able to adjust the log levels by POSTING a new level to
-the /actuator/loggers endpoint. The following shows how to do this when
+the /actuator/loggers endpoint for the package or class to apply the
+adjustment to.
 
 ```shell
 curl  -i -X POST -H 'Content-Type: application/json' -d '{"configuredLevel":"DEBUG"}' \
@@ -106,7 +107,7 @@ curl  -i -X POST -H 'Content-Type: application/json' -d '{"configuredLevel":"DEB
 
 The swagger-ui should be available unless you've changed the default settings.
 This UI should let you view and try the various endpoints available in the
-service. It should be limited to localhost and available at:
+service.
 
 http://localhost:8888/actuator/swagger-ui
 
@@ -138,7 +139,8 @@ curl http://localhost:8888/actuator/loggers/com.redali; echo
 ## Docker
 
 One of the nice Spring Boot bonuses is that you have the ability to build
-docker containers of your Java application without doing much.
+docker containers of your Java application without doing much. You don't
+even need to create a Docker file.
 
 ### Build docker container image
 
@@ -153,30 +155,35 @@ To check that this initial image will run the service:
 docker run --name logging-example --rm -p 8080:8080 -p 8888:8888 spring-boot-logging-example:0.0.1-SNAPSHOT
 ```
 
-```shell
-[pabla@tamale spring-boot-logging]$ docker image ls | grep spring-boot-logging-example
-spring-boot-logging-example                          0.0.1-SNAPSHOT                                 46334fcdb1cf   43 years ago    286MB
-[pabla@tamale spring-boot-logging]$ 
-```
-
-# Kubernetes
-
-## Build docker container image
+The endpoints described in the previous sections should still work when
+running as a docker container. Try the [Swagger UI](http://localhost:8888/actuator/swagger-ui)
+and some curl commands.
 
 ```shell
-mvn spring-boot:build-image
-```
-
-To check that this initial image will run the service:
-
-```shell
-docker run --rm --name logging-example -p 8080:8080 -p 8888:8888 spring-boot-logging-example:0.0.1-SNAPSHOT
+curl http://localhost:8080/logging-example/api/v1/log/test; echo
+curl http://localhost:8888/actuator/health; echo
 ```
 
 # Kubernetes (microk8s)
 
-If you don't have a registry set up, you can save the docker container and then
-import it into microk8s via:
+This section describes how to quickly check that your container will run
+inside Kurbenetes. The commands shown assume that you have microk8s installed
+as your Kubernetes implementation. That being said, other than the importing
+of the container image, the commands shown below use kubectl and should be
+compatible with other Kubernetes implementations.
+
+If you haven't done so yet, you will need to build the container image:
+
+```shell
+mvn clean
+mvn spring-boot:build-image
+```
+
+The container image built will likely be available only locally to your docker
+service. There are several mechanisms to get it into Kubernetes and these can
+be a bit of a challenge to set up. For development and testing purposes, you
+can export the container image from docker and import it into microk8s using
+the following command:
 
 ```shell
 docker image save spring-boot-logging-example:0.0.1-SNAPSHOT | microk8s ctr image import -
@@ -184,14 +191,14 @@ docker image save spring-boot-logging-example:0.0.1-SNAPSHOT | microk8s ctr imag
 
 You can then generate a template deployment and service yaml file for kubernetes
 using the following commands (skip the namespace if you already have an
-"examples" namespace):
+"demo" namespace):
 
 ```shell
-kubectl create namespace examples -o=yaml --dry-run=client >| target/k8s.yaml
+kubectl create namespace demo -o=yaml --dry-run=client >| target/k8s.yaml
 echo ---  >> target/k8s.yaml
-kubectl create deployment spring-boot-logging-example --namespace examples --image docker.io/library/spring-boot-logging-example:0.0.1-SNAPSHOT -o=yaml --dry-run=client >> target/k8s.yaml
+kubectl create deployment spring-boot-logging --namespace demo --image docker.io/library/spring-boot-logging-example:0.0.1-SNAPSHOT -o=yaml --dry-run=client >> target/k8s.yaml
 echo --- >> target/k8s.yaml
-kubectl create service clusterip spring-boot-logging-example --namespace examples --tcp 8080:8080 --tcp 8888:8888 -o=yaml --dry-run=client >> target/k8s.yaml
+kubectl create service clusterip spring-boot-logging-example --namespace demo --tcp 8080:8080 --tcp 8888:8888 -o=yaml --dry-run=client >> target/k8s.yaml
 ```
 
 To apply these yaml files to your Kubernetes cluster:
@@ -200,21 +207,50 @@ To apply these yaml files to your Kubernetes cluster:
 kubectl apply -f target/k8s.yaml
 ```
 
-To expose the service ports from Kubernetes:
+At this point, you should be able to verify that the bash script can be used
+to query and adjust log levels on the fly. An alias has been used reduce some
+typing and the output lines are prefixed with "# Output:" to simplify
+copy/pasting into a terminal window.
 
 ```shell
-kubectl port-forward --namespace examples deployment/spring-boot-logging-example 8080:8080 8888:8888
+alias demo-logging-level='./src/scripts/spring-boot-log-level.sh --namespace demo --deployment spring-boot-logging --port 8888'
+demo-logging-level --pkg com.redali.example.controllers --get
+
+# Ouptut: {"configuredLevel":"INFO","effectiveLevel":"INFO"}
+
+demo-logging-level --pkg com.redali.example.controllers --set --level TRACE
+
+# Ouptut: HTTP/1.1 204
+# Ouptut: Date: Mon, 20 Feb 2023 12:49:05 GMT
+
+demo-logging-level --pkg com.redali.example.controllers --get
+
+# Ouptut: {"configuredLevel":"TRACE","effectiveLevel":"TRACE"}
 ```
 
-You should then be able to curl the health of the service on the exposed port:
+Instead of using the helper script, you can use the following command to
+gain access to the REST endpoints and management port directly:
 
 ```shell
-[pabla@tamale ~]$ curl http://localhost:8080/actuator/health; echo
-{"status":"UP"}
-[pabla@tamale ~]$
+kubectl port-forward --namespace demo deployment/spring-boot-logging 8080:8080 8888:8888
 ```
 
-To remove from your cluster:
+You should then be able to hit the REST endpoint:
+
+```shell
+curl http://localhost:8080/logging-example/api/v1/log/test; echo
+```
+
+You should also have access to the actuator and [Swagger UI](http://localhost:8888/actuator/swagger-ui) endpoints under port
+8888:
+
+```shell
+curl http://localhost:8888/actuator/health; echo
+
+# Output: {"status":"UP"}
+```
+
+To remove from the deployment from your Kubernetes cluster:
 
 ```shell
 kubectl delete -f target/k8s.yaml

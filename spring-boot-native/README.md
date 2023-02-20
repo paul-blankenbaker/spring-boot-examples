@@ -46,14 +46,10 @@ To check that this initial image will run the service:
 docker run --rm -p 8080:8080 spring-boot-native:0.0.2-SNAPSHOT
 ```
 
-NOTE: This container image is much bigger and starts much slower to start up
-than either of the native images that are built later. Size is about 3X bigger:
-
 ```shell
-[pabla@tamale spring-boot-native]$ docker image ls | grep spring-boot
-spring-boot-native                                   v1                                             b59261d327c8   10 minutes ago   91.4MB
+[tamale spring-boot-native]$ docker image ls | grep spring-boot-native
 spring-boot-native                                   0.0.2-SNAPSHOT                                 a3dd76fc8785   43 years ago     277MB
-[pabla@tamale spring-boot-native]$ 
+[tamale spring-boot-native]$ 
 ```
 
 # Native Build Instructions
@@ -62,17 +58,35 @@ Set the GRAALVM_HOME environment variable to the directory where you installed
 GraalVM:
 
 ```shell
-export GRAALVM_HOME=/home/pabla/.local/graalvm-ce-java17-22.3.0
+# You need to adjust this for your installation of GraalVM
+export GRAALVM_HOME=${HOME}/.local/graalvm-ce-java17-22.3.0
 ```
 
-Optionally set JAVA_HOME and PATH for the GraalVM tools:
+Set JAVA_HOME and PATH for the GraalVM tools (this might be optional):
 
 ```shell
 export JAVA_HOME="${GRAALVM_HOME}"
 export PATH="${GRAALVM_HOME}/bin:${PATH}"
 ```
 
+## Build native executable
+
+To create an executable that you can run directly from the command
+line, use the following command:
+
+```shell
+mvn -Pnative -DskipTests native:compile # Use "package" if Spring Boot 2.6.3
+```
+
+You can run native executable directly:
+
+```shell
+./target/spring-boot-native
+```
+
 ## Build native docker container image
+
+To create a container image of the native executable, use the following:
 
 ```shell
 mvn clean
@@ -85,50 +99,23 @@ To check that this initial image will run the service:
 docker run --rm -p 8080:8080 spring-boot-native:0.0.2-SNAPSHOT
 ```
 
-## Build native executable
+NOTE: The native container image is much smaller and starts much quicker
+than the normal Java JAR based container. The size has shrunk from 277MB
+earier down to 97MB:
 
 ```shell
-mvn -Pnative -DskipTests native:compile # Use "package" if Spring Boot 2.6.3
-```
-
-NOTE: You can run native executable directly:
-
-```shell
-./target/spring-boot-native
-```
-
-## Build final docker image from Native executable
-
-Requires a target/spring-boot-native executable from prior build and a
-[Dockerfile](Dockerfile).
-
-```shell
-docker build --tag spring-boot-native:v1 .
-```
-
-Run as docker container:
-
-```shell
-docker run --rm -p 8080:8080 spring-boot-native:v1
-```
-
-NOTE: This second pass is probably not worth it, the startup times and image
-sizes are pretty close.
-
-```shell
-[pabla@tamale spring-boot-native]$ docker image ls | grep spring-boot
-spring-boot-native                                   v1                                             b59261d327c8   7 minutes ago    91.4MB
-spring-boot-native                                   0.0.2-SNAPSHOT                                 352876894e35   43 years ago     95.7MB
-[pabla@tamale spring-boot-native]$ 
+[tamale spring-boot-native]$ docker image ls | grep spring-boot-native
+spring-boot-native                                   0.0.2-SNAPSHOT                                 a3dd76fc8785   43 years ago     277MB
+[tamale spring-boot-native]$ 
 ```
 
 # Kubernetes (microk8s)
 
-If you don't have a registry set up, you can save the docker container and then
-import it into microk8s via:
+If you don't have a registry set up, you can use the following to import the
+docker container image into microk8s:
 
 ```shell
-docker image save spring-boot-native:v1 | microk8s ctr image import -
+docker image save spring-boot-native:0.0.2-SNAPSHOT | microk8s ctr image import -
 ```
 
 You can then generate a template deployment and service yaml file for kubernetes via:
@@ -136,7 +123,7 @@ You can then generate a template deployment and service yaml file for kubernetes
 ```shell
 kubectl create namespace demo -o=yaml --dry-run=client >| target/spring-boot-native.yaml
 echo ---  >> target/spring-boot-native.yaml
-kubectl create deployment spring-boot-native --namespace demo --image docker.io/library/spring-boot-native:v1 -o=yaml --dry-run=client >> target/spring-boot-native.yaml
+kubectl create deployment spring-boot-native --namespace demo --image docker.io/library/spring-boot-native:0.0.2-SNAPSHOT -o=yaml --dry-run=client >> target/spring-boot-native.yaml
 echo --- >> target/spring-boot-native.yaml
 kubectl create service clusterip course-tracker-service --namespace demo --tcp 80:8080 -o=yaml --dry-run=client >> target/spring-boot-native.yaml
 ```
@@ -147,7 +134,7 @@ To apply these yaml files to your Kubernetes cluster:
 kubectl apply -f target/spring-boot-native.yaml
 ```
 
-To expose the service port from Kubernetes:
+To expose the service port of your container from Kubernetes for a quick test:
 
 ```shell
 kubectl port-forward --namespace demo deployment/spring-boot-native 8080:8080
@@ -156,9 +143,9 @@ kubectl port-forward --namespace demo deployment/spring-boot-native 8080:8080
 You should then be able to curl the health of the service on the exposed port:
 
 ```shell
-[pabla@tamale ~]$ curl http://localhost:8080/actuator/health; echo
+[tamale ~]$ curl http://localhost:8080/actuator/health; echo
 {"status":"UP"}
-[pabla@tamale ~]$
+[tamale ~]$
 ```
 
 To remove from your cluster:
