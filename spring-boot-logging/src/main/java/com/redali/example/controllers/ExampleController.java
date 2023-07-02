@@ -28,10 +28,12 @@ import org.springframework.web.bind.annotation.RestController;
  *     <li>Using the @Slf4j annotation from lombok so that you can then use log.info(), log.debug(), ... in your class.
  *     If you are avoiding lombok, you will need to declare your log instance by hand via:
  *     <pre><code>private static Logger log = LoggerFactory.getLogger(LoggingExampleController.class)</code></pre></li>
+ * 
  *     <li>A single REST endpoint /log/test that uses an optional msg=TEXT parameter for logging messages. Use like:
  *     <pre>curl <a href="http://localhost:8080/log/test">http://localhost:8080/log/test</a>
  *     curl <a href="http://localhost:8080/log/test?msg=Hello+World">http://localhost:8080/log/test?msg=Hello+World</a></pre>
  *     The output returned provides information about and adjusting log levels using the Spring Boot /actuator/loggers endpoint.</li>
+ * 
  *     <li>A CommandLineRunner implementation (which isn't typical on a Controller) that logs a message to the server
  *     console showing the initial curl request to use to get the example output.</li>
  * </ul>
@@ -40,14 +42,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController // Let Spring Boot know that this class provides REST handlers
 @RequestMapping("${api.url}/log/") // Root path of REST handlers provided by this class
 // This is optional, it allows the swagger-ui (or any ui) to actually make use of the API from a different localhost port.
-@CrossOrigin(origins = "http://localhost:${management.server.port:8080}")
+@CrossOrigin(origins = "http://${management.server.address:localhost}:${management.server.port:8080}")
 @Tag(name = "Logging Test", description = """
         This REST controller provides a service to test the effects of dynamically adjusting
         log levels using the /actuator/loggers endpoint built into Spring Boot.
         """)
 public class ExampleController implements CommandLineRunner {
     // Example of creating the log instance by hand (if not using @Slf4j annotation on class)
-    // private static Logger log = LoggerFactory.getLogger(LoggingExampleController.class)
+    // private static Logger log = LoggerFactory.getLogger(ExampleController.class)
 
     // This is just for the initial startup log message (see run() method below)
     @Value("http://${server.address:localhost}:${server.port:8080}${api.url}/")
