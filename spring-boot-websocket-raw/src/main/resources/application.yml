@@ -1,0 +1,24 @@
+# Example setting configurable parameters using a yaml file instead of properties
+
+app:
+  endpoint:
+    json:
+      # End point to register our WebSocket JSON message processing service at.
+      # Clients will connect to something like: "ws://localhost:8080/websocket/json/messages"
+      messages: "/websocket/json/messages"
+
+management:
+  server:
+    # Example of moving actuator endpoints to separate port and locking down to localhost
+    address: "localhost"
+    port: 8888
+  endpoints:
+    web:
+      exposure:
+        include: "health,loggers"
+
+logging:
+  level:
+    ROOT: "ERROR"
+    com:
+      redali: "DEBUG"
