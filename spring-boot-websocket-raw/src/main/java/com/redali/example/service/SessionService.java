@@ -11,6 +11,7 @@ import java.util.Collection;
  * Defines what we need our JSON message processing service to do.
  */
 public interface SessionService {
+
     /**
      * Looks at the "request" and optional "content" fields of the payload JSON message and responds accordingly.
      *
@@ -42,4 +43,17 @@ public interface SessionService {
      * @return Collection of 0 or more WebSocket sessions.
      */
     Collection<WebSocketSession> getSessions();
+
+    /**
+     * Sends a text message to a client.
+     *
+     * <p>WARNING: This uses the sendMessage() of the client directly for sending out the message.
+     * If one client could cause this to block, that could cause issues for other clients! If the send fails, the
+     * client connection will be removed and closed out.</p>
+     *
+     * @param session Session to send message to (must not be null).
+     * @param id ID to indicate type of message being sent.
+     * @param content Any content associated with the message ID (pass null if just need ID sent).
+     */
+    void sendToSession(@NotNull WebSocketSession session, int id, JSONObject content);
 }

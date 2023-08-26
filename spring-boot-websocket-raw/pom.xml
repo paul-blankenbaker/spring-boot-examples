@@ -38,11 +38,20 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
+
+        <!-- Dependencies required only for testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>javax.websocket</groupId>
+            <artifactId>javax.websocket-client-api</artifactId>
+            <version>1.1</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Adds /actuator endpoints like http://localhost:8080/actuator/health -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

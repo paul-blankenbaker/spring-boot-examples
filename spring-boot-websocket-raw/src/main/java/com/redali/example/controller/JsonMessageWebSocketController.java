@@ -39,15 +39,14 @@ public class JsonMessageWebSocketController extends TextWebSocketHandler {
         String content = message.getPayload();
         try {
             // Parse JSON message client, process and send out response if required
-            JSONObject jsonReceived = new JSONObject(content);
-            JSONObject jsonResponse = sessionService.processRequest(session, jsonReceived);
+            var jsonReceived = new JSONObject(content);
+            var jsonResponse = sessionService.processRequest(session, jsonReceived);
             if (jsonResponse != null) {
                 session.sendMessage(new TextMessage(jsonResponse.toString()));
             }
         } catch (JSONException err) {
             log.error("Received garbage from {}, closing connection, garbage: {}", session.getRemoteAddress(), content);
             session.close();
-            throw err;
         }
     }
 
