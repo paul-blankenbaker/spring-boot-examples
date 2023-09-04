@@ -1,6 +1,8 @@
 # Example setting configurable parameters using a yaml file instead of properties
 
 app:
+  title: @project.description@
+  version: @project.version@
   endpoint:
     json:
       # End point to register our WebSocket JSON message processing service at.

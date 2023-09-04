@@ -10,7 +10,7 @@ import websocket
 
 
 def on_message(ws, message):
-    print(message)
+    print(message, flush=True) # flush buffers on each print for example of piping to jq
 
 
 def on_error(ws, error):
