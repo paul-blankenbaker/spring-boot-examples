@@ -15,3 +15,9 @@ Collection of minimal spring-boot applications to use as notes on setting up and
 * How convert a spring-boot JAR file or native executable into a container image.
 * How to run the container image in docker.
 * Minimal steps to deploy container image into Kubernetes.
+
+## [spring-boot-websocket-raw](spring-boot-websocket-raw/README.md)
+
+* Creating a spring-boot project that accepts raw (text message) based clients instead of STOMP clients.
+* Includes example [Python WebSocket Client](spring-boot-web-socket-raw/src/examples/python/websocket-client.py) 
+* Includes example [JavaScript WebSocket Client](spring-boot-web-socket-raw/src/examples/javascript/websocket-client.js) 
