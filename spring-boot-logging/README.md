@@ -167,7 +167,7 @@ curl http://localhost:8888/actuator/health; echo
 # Kubernetes (microk8s)
 
 This section describes how to quickly check that your container will run
-inside Kurbenetes. The commands shown assume that you have microk8s installed
+inside Kubernetes. The commands shown assume that you have microk8s installed
 as your Kubernetes implementation. That being said, other than the importing
 of the container image, the commands shown below use kubectl and should be
 compatible with other Kubernetes implementations.
@@ -190,7 +190,7 @@ docker image save spring-boot-logging-example:0.0.1-SNAPSHOT | microk8s ctr imag
 ```
 
 You can then generate a template deployment and service yaml file for kubernetes
-using the following commands (skip the namespace if you already have an
+using the following commands (skip the namespace if you already have a
 "demo" namespace):
 
 ```shell

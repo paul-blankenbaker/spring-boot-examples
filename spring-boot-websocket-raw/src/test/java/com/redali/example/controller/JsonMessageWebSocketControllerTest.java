@@ -20,7 +20,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
 import java.net.URI;
@@ -35,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JsonMessageWebSocketControllerTest {
     private static final String GARBAGE_JSON = "[ { ] ] }";
     private static final String TEST_ENDPOINT = "/websocket/json/messages";
+    private static final String CONTENT_KEY = "content";
 
     @LocalServerPort // The random port number used by our app during the integration test run
     private int serverPort;
@@ -57,13 +57,13 @@ class JsonMessageWebSocketControllerTest {
         assertThat(got).isNotNull();
         assertThat(got.getInt("id")).isZero();
 
-        var server = got.getJSONObject("content").getJSONObject("server");
+        var server = got.getJSONObject(CONTENT_KEY).getJSONObject("server");
         assertThat(server.getInt("port")).isEqualTo(serverPort);
         assertThat(server.getString("address")).isNotEmpty();
         assertThat(server.getString("host")).isNotEmpty();
         server.getBoolean("resolved"); // hard to know if host name will be resolved, just check existence
 
-        var clt = got.getJSONObject("content").getJSONObject("client");
+        var clt = got.getJSONObject(CONTENT_KEY).getJSONObject("client");
         assertThat(clt).isNotNull();
         assertThat(clt.getInt("port")).isPositive();
 
@@ -72,7 +72,7 @@ class JsonMessageWebSocketControllerTest {
         got = new JSONObject(messageHandler.waitForMessage());
         assertThat(got).isNotNull();
         assertThat(got.getInt("id")).isEqualTo(1);
-        var dice = got.getJSONObject("content");
+        var dice = got.getJSONObject(CONTENT_KEY);
         assertThat(dice).isNotNull();
         assertThat(dice.getInt("dice")).isEqualTo(3);
         assertThat(dice.getInt("sides")).isEqualTo(12);
@@ -89,7 +89,7 @@ class JsonMessageWebSocketControllerTest {
         periodic.periodicHealth();
         got = new JSONObject(messageHandler.waitForMessage());
         assertThat(got.getInt("id")).isEqualTo(200);
-        var health = got.getJSONObject("content");
+        var health = got.getJSONObject(CONTENT_KEY);
         assertThat(health.getInt("sessionCount")).isEqualTo(1);
         assertThat(health.getString("status")).isEqualTo("UP");
 
