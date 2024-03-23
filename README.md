@@ -4,6 +4,15 @@ Collection of minimal spring-boot applications to use as notes on setting
 up and getting started with using spring-boot as a starting point for
 applications and services.
 
+The top level mvnw and mvnw.cmd Maven stubs should be usable to build all
+subprojects from the top level, or individual projects. For example, to
+build just spring-boot-logging:
+
+```sh
+cd spring-boot-logging
+../mvnw install
+```
+
 ## [spring-boot-logging](spring-boot-logging/README.md)
 
 * Configuring actuators so logging levels can be dynamically adjusted at
