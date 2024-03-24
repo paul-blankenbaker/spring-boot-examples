@@ -13,6 +13,7 @@ resource filtering on the standard
 * Settings in the [application.properties](src/main/resources/application.properties)
 that control the behavior of things like banner output, log messages, interactive, ...
 * How to run a Spring Shell test without hanging the build.
+* An example of running a Linux shell command from Spring Shell (not necessarily a good practice).
 
 ### Reference Documentation
 For further reference, please consider the following sections:
@@ -21,4 +22,3 @@ For further reference, please consider the following sections:
 * [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/3.1.5/maven-plugin/reference/html/)
 * [Create an OCI image](https://docs.spring.io/spring-boot/docs/3.1.5/maven-plugin/reference/html/#build-image)
 * [Spring Shell](https://spring.io/projects/spring-shell)
-
