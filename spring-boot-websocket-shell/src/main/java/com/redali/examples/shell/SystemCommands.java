@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 // Adding command annotation to class allows us to create sub-commands
 @Command(command = "system", alias = {"sys"}, description = "Functions from java.util.System")
@@ -52,7 +53,11 @@ public class SystemCommands {
         // you want the user to see something as progress is being made
         var out = terminal.writer();
         if (keys == null || keys.isEmpty()) {
-            keys = System.getenv().keySet().stream().sorted().toList();
+            keys = new ArrayList<>();
+            for (var key : System.getProperties().keySet()) {
+                keys.add(key.toString());
+            }
+            keys = keys.stream().sorted().collect(Collectors.toList());
         }
         for (var key : keys) {
             out.print(key);
